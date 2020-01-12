@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace InventoryUi.Inventory.Models
+namespace InventoryUi.Models
 {
     public class Product
     {
@@ -21,6 +21,5 @@ namespace InventoryUi.Inventory.Models
         public int UnitId { get; set; }
         public string UnitName { get; set; }
         public string UnitDescription { get; set; }
-
     }
 }

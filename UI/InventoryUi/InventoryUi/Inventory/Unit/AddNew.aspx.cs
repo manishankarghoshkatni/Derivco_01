@@ -1,5 +1,5 @@
 ﻿using System;
-using InventoryUi.Inventory.Models;
+using InventoryUi.Models;
 using Newtonsoft.Json;
 using InventoryUi.Shared;
 
@@ -17,7 +17,7 @@ namespace InventoryUi.Inventory.Unit
         {
             try
             {
-                InventoryUi.Inventory.Models.Unit Unit = new InventoryUi.Inventory.Models.Unit();
+                InventoryUi.Models.Unit Unit = new InventoryUi.Models.Unit();
                 Unit.UnitName = TxtUnitName.Text;
                 Unit.UnitDescription = TxtDescription.Text;
                 string json = JsonConvert.SerializeObject(Unit);

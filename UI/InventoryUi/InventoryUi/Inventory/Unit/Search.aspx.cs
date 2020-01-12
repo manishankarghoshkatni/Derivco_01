@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Web.UI.WebControls;
-using InventoryUi.Inventory.Models;
+using InventoryUi.Models;
 using Newtonsoft.Json;
 using InventoryUi.Shared;
 using System.Data;
@@ -21,17 +21,19 @@ namespace InventoryUi.Inventory.Unit
 
                 if (response.responseCode == ApiResponse.Success)
                 {
-                    InventoryUi.Inventory.Models.Unit[] data = JsonConvert.DeserializeObject<InventoryUi.Inventory.Models.Unit[]>(response.data.ToString());
+                    InventoryUi.Models.Unit[] data = JsonConvert.DeserializeObject<InventoryUi.Models.Unit[]>(response.data.ToString());
                     dt = Helper.CreateDataTable(data);
                 }
                 else if (response.responseCode == ApiResponse.NoDataFound)
                 {
+                    TxtId.Text = "";
                     TxtDescription.Text = "";
                     LblErrorMsg.Text = "No Data Found";
                     LblErrorMsg.Visible = true;
                 }
                 else if (response.responseCode == ApiResponse.Exception)
                 {
+                    TxtId.Text = "";
                     TxtDescription.Text = "";
                     LblErrorMsg.Text = "Api Error: " + response.error;
                     LblErrorMsg.Visible = true;
@@ -58,6 +60,7 @@ namespace InventoryUi.Inventory.Unit
             {
                 this.BindGrid();
             }
+            TxtId.Attributes.Add("onkeypress", "return isNumberKey(event)");
         }
 
         protected void CmdSearchById_Click(object sender, EventArgs e)
@@ -73,7 +76,7 @@ namespace InventoryUi.Inventory.Unit
                 else
                 {
                     ApiResponse response = Helper.GetApiResponse("api/Units/" + id.ToString());
-                    InventoryUi.Inventory.Models.Unit data = JsonConvert.DeserializeObject<InventoryUi.Inventory.Models.Unit>(response.data.ToString());
+                    InventoryUi.Models.Unit data = JsonConvert.DeserializeObject<InventoryUi.Models.Unit>(response.data.ToString());
                     if (response.responseCode == ApiResponse.Success)
                     {
                         TxtUnitName.Text = data.UnitName;

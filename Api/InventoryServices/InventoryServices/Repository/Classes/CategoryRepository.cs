@@ -116,9 +116,19 @@ namespace InventoryServices.Repository.Classes
 
             try
             {
-                db.Categories.Add(category);
-                await db.SaveChangesAsync();
-                jsonResponse = JsonConvert.SerializeObject(Helper.CreateDataResponse(category.CategoryId.ToString()));
+                var temp = (from c in db.Categories
+                         where c.CategoryName.Equals(category.CategoryName)
+                         select c).FirstOrDefault();
+                if (temp == null)
+                {
+                    db.Categories.Add(category);
+                    await db.SaveChangesAsync();
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateDataResponse(category.CategoryId.ToString()));
+                }
+                else
+                {
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateErrorResponse(new Exception("Category already exists!")));
+                }
             }
             catch (Exception ex)
             {
@@ -162,6 +172,10 @@ namespace InventoryServices.Repository.Classes
                 {
                     jsonResponse = JsonConvert.SerializeObject(Helper.CreateNoDataResponse());
                 }
+                else if (this.ProductExists(categoryId))
+                {
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateErrorResponse(new Exception("Can not delete Category because 1 or more product(s) exits for this category")));
+                }
                 else
                 {
                     db.Categories.Remove(category);
@@ -177,6 +191,10 @@ namespace InventoryServices.Repository.Classes
             return jsonResponse;
         }
 
+        private bool ProductExists(int categoryId)
+        {
+            return db.Products.Where(p => p.CategoryId == categoryId).FirstOrDefault() != null;
+        }
         private bool CategoryExists(int id)
         {
             return db.Categories.Count(e => e.CategoryId == id) > 0;

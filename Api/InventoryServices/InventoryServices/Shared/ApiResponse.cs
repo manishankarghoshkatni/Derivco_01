@@ -50,8 +50,17 @@ namespace InventoryServices.Shared
             ApiResponse response = new ApiResponse();
             response.data = "";
             response.responseCode = ApiResponse.Exception;
-            response.error = ex.Message;
+            response.error = Helper.GetException(ex).Message.Replace('"', '\'');
             return response;
+        }
+
+        private static Exception GetException(Exception ex)
+        {
+            if (ex.InnerException == null) return ex;
+            else
+            {
+                return Helper.GetException(ex.InnerException);
+            }
         }
     }
 }

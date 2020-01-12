@@ -12,6 +12,8 @@ namespace InventoryServices
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
+    using System.Data.Entity.Core.Objects;
+    using System.Linq;
     
     public partial class InventoryEntities : DbContext
     {
@@ -28,5 +30,23 @@ namespace InventoryServices
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Product> Products { get; set; }
         public virtual DbSet<Unit> Units { get; set; }
+    
+        public virtual ObjectResult<GetProductByName_Result> GetProductByName(string productName)
+        {
+            var productNameParameter = productName != null ?
+                new ObjectParameter("ProductName", productName) :
+                new ObjectParameter("ProductName", typeof(string));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetProductByName_Result>("GetProductByName", productNameParameter);
+        }
+    
+        public virtual ObjectResult<GetProductByCategoryId_Result> GetProductByCategoryId(Nullable<int> categoryId)
+        {
+            var categoryIdParameter = categoryId.HasValue ?
+                new ObjectParameter("CategoryId", categoryId) :
+                new ObjectParameter("CategoryId", typeof(int));
+    
+            return ((IObjectContextAdapter)this).ObjectContext.ExecuteFunction<GetProductByCategoryId_Result>("GetProductByCategoryId", categoryIdParameter);
+        }
     }
 }

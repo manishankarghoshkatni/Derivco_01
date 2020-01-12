@@ -1,5 +1,5 @@
 ﻿using System;
-using InventoryUi.Inventory.Models;
+using InventoryUi.Models;
 using Newtonsoft.Json;
 using InventoryUi.Shared;
 
@@ -17,7 +17,7 @@ namespace InventoryUi.Inventory.Category
         {
             try
             {
-                InventoryUi.Inventory.Models.Category category = new InventoryUi.Inventory.Models.Category();
+                InventoryUi.Models.Category category = new InventoryUi.Models.Category();
                 category.CategoryName = TxtCategoryName.Text;
                 category.CategoryDescription = TxtDescription.Text;
                 string json = JsonConvert.SerializeObject(category);

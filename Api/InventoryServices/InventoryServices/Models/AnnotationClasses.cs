@@ -27,7 +27,7 @@ namespace InventoryServices
     {
         public int CategoryId { get; set; }
 
-        [MinLength(3, ErrorMessage = "Minimum 3 chars required")]
+        [MinLength(2, ErrorMessage = "Minimum 2 chars required")]
         public string CategoryName { get; set; }
 
         public string CategoryDescription { get; set; }
@@ -36,7 +36,7 @@ namespace InventoryServices
     public class ProductAnnotations
     {
         public int ProductId { get; set; }
-        [MinLength(3, ErrorMessage = "Minimum 3 chars required")]
+        [MinLength(2, ErrorMessage = "Minimum 2 chars required")]
         public string ProductName { get; set; }
         public int CategoryId { get; set; }
         public decimal Price { get; set; }

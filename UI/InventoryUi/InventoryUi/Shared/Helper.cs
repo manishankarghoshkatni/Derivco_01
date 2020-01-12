@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using InventoryUi.Inventory.Models;
+using InventoryUi.Models;
 using Newtonsoft.Json;
 using System.Configuration;
 using System.Data;
@@ -14,9 +14,17 @@ namespace InventoryUi.Shared
 {
     public class Helper
     {
+        /*
+         * Method to obtain result from web api through HttpGet verb
+         * Parameter: path of the get api like 
+         *      api/Products
+         *      api/Products/1
+         *      api/Products/intel i7
+         *      api/Products/Category/Camera
+         */
         public static ApiResponse GetApiResponse(string actionPath)
         {
-            ApiResponse response =null;
+            ApiResponse response = null;
             try
             {
                 string WebApiRootUrl = ConfigurationManager.AppSettings["WebApiRootUrl"];
@@ -34,7 +42,7 @@ namespace InventoryUi.Shared
 
                         var result = responseTask.Result.Replace("\\", "").Trim('"');
                         response = JsonConvert.DeserializeObject<ApiResponse>(result);
-                        
+
                     }
                 }
                 else
@@ -49,13 +57,18 @@ namespace InventoryUi.Shared
             {
                 response = new ApiResponse();
                 response.data = "";
-                response.error = ex.Message;
+                response.error = Helper.GetException(ex).Message;
                 response.responseCode = 2;
             }
             return response;
         }
 
-
+        /*
+         * Method to create resource using HttpPost api verb 
+         * Parameter: 
+         * 1. actionPath: path of the post api like api/Products/Create
+         * 2. data: json of complex data type
+         */
         public static ApiResponse PostToApi(string actionPath, string data)
         {
             ApiResponse response = new ApiResponse();
@@ -89,12 +102,18 @@ namespace InventoryUi.Shared
             catch (Exception ex)
             {
                 response.data = "";
-                response.error = ex.Message;
+                response.error = Helper.GetException(ex).Message;
                 response.responseCode = 2;
             }
             return response;
         }
 
+        /*
+         * Method to Modify resource using HttpPut api verb 
+         * Parameter: 
+         * 1. actionPath: path of the put api like api/Products/Modify
+         * 2. data: json of complex data type
+         */
         public static ApiResponse PutToApi(string actionPath, string data)
         {
             ApiResponse response = new ApiResponse();
@@ -128,12 +147,18 @@ namespace InventoryUi.Shared
             catch (Exception ex)
             {
                 response.data = "";
-                response.error = ex.Message;
+                response.error = Helper.GetException(ex).Message;
                 response.responseCode = 2;
             }
             return response;
         }
 
+        /*
+         * Method to delete resource using HttpDelete api verb 
+         * Parameter: 
+         * 1. actionPath: path of the delete api like api/Products/Delete
+         * 2. key: key of the resource to be deleted
+         */
         public static ApiResponse DeleteRequestToApi(string actionPath, int key)
         {
             ApiResponse response = new ApiResponse();
@@ -153,7 +178,8 @@ namespace InventoryUi.Shared
                         responseTask.Wait();
 
                         var result = responseTask.Result.Content.ReadAsStringAsync();
-                        response = JsonConvert.DeserializeObject<ApiResponse>(result.Result.Replace("\\", "").Trim('"'));
+                        string resultJson = result.Result.Replace("\\", "").Trim('"');
+                        response = JsonConvert.DeserializeObject<ApiResponse>(resultJson);
                     }
                 }
                 else
@@ -166,7 +192,7 @@ namespace InventoryUi.Shared
             catch (Exception ex)
             {
                 response.data = "";
-                response.error = ex.Message;
+                response.error = Helper.GetException(ex).Message;
                 response.responseCode = 2;
             }
             return response;
@@ -196,7 +222,7 @@ namespace InventoryUi.Shared
             return response;
         }
 
-        public static DataTable CreateDataTable(InventoryUi.Inventory.Models.Category[] data)
+        public static DataTable CreateDataTable(InventoryUi.Models.Category[] data, string firstItem = null)
         {
             DataTable _myDataTable = new DataTable();
 
@@ -205,7 +231,16 @@ namespace InventoryUi.Shared
             _myDataTable.Columns.Add("CategoryName", typeof(string));
             _myDataTable.Columns.Add("CategoryDescription", typeof(string));
 
-            for (int j = 0; j < data.Length ; j++)
+            if (firstItem != null)
+            {
+                DataRow row = _myDataTable.NewRow();
+                row[0] = 0;
+                row[1] = firstItem;
+
+                _myDataTable.Rows.Add(row);
+            }
+
+            for (int j = 0; j < data.Length; j++)
             {
                 DataRow row = _myDataTable.NewRow();
                 row[0] = data[j].CategoryId;
@@ -217,7 +252,7 @@ namespace InventoryUi.Shared
             return _myDataTable;
         }
 
-        public static DataTable CreateDataTable(InventoryUi.Inventory.Models.Unit[] data)
+        public static DataTable CreateDataTable(InventoryUi.Models.Unit[] data, string firstItem = null)
         {
             DataTable _myDataTable = new DataTable();
 
@@ -225,6 +260,15 @@ namespace InventoryUi.Shared
             _myDataTable.Columns.Add("UnitId", typeof(int));
             _myDataTable.Columns.Add("UnitName", typeof(string));
             _myDataTable.Columns.Add("UnitDescription", typeof(string));
+
+            if (firstItem != null)
+            {
+                DataRow row = _myDataTable.NewRow();
+                row[0] = 0;
+                row[1] = firstItem;
+
+                _myDataTable.Rows.Add(row);
+            }
 
             for (int j = 0; j < data.Length; j++)
             {
@@ -238,7 +282,7 @@ namespace InventoryUi.Shared
             return _myDataTable;
         }
 
-        public static DataTable CreateDataTable(InventoryUi.Inventory.Models.Product[] data)
+        public static DataTable CreateDataTable(InventoryUi.Models.Product[] data, string firstItem = null)
         {
             DataTable _myDataTable = new DataTable();
 
@@ -256,12 +300,21 @@ namespace InventoryUi.Shared
             _myDataTable.Columns.Add("UnitName", typeof(string));
             _myDataTable.Columns.Add("UnitDescription", typeof(string));
 
+            if (firstItem != null)
+            {
+                DataRow row = _myDataTable.NewRow();
+                row["ProductId"] = 0;
+                row["ProductName"] = firstItem;
+
+                _myDataTable.Rows.Add(row);
+            }
+
             for (int j = 0; j < data.Length; j++)
             {
                 DataRow row = _myDataTable.NewRow();
                 row["ProductId"] = data[j].ProductId;
                 row["ProductName"] = data[j].ProductName;
-                row["ProductDescription"] = data[j].ProductDescription;
+                row["ProductDescription"] = data[j].ProductDescription.Replace("<br />", "\r\n");
                 row["CategoryId"] = data[j].CategoryId;
                 row["CategoryName"] = data[j].CategoryName;
                 row["CategoryDescription"] = data[j].CategoryDescription;
@@ -275,6 +328,24 @@ namespace InventoryUi.Shared
             }
             return _myDataTable;
         }
-    }
 
+        public static string[] GetCurrencies()
+        {
+            string temp = ConfigurationManager.AppSettings["Currencies"];
+            if (!string.IsNullOrWhiteSpace(temp))
+            {
+                return temp.Split(new char[] { ';' });
+            }
+            else return null;
+        }
+
+        private static Exception GetException(Exception ex)
+        {
+            if (ex.InnerException == null) return ex;
+            else
+            {
+                return Helper.GetException(ex.InnerException);
+            }
+        }
+    }
 }

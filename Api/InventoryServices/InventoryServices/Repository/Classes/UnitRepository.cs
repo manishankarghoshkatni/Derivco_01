@@ -110,15 +110,25 @@ namespace InventoryServices.Repository.Classes
             return jsonResponse;
         }
 
-        public async Task<string> CreateUnitAsync(Unit Unit)
+        public async Task<string> CreateUnitAsync(Unit unit)
         {
             string jsonResponse = "";
 
             try
             {
-                db.Units.Add(Unit);
-                await db.SaveChangesAsync();
-                jsonResponse = JsonConvert.SerializeObject(Helper.CreateDataResponse(Unit.UnitId.ToString()));
+                var temp = (from u in db.Units
+                            where u.UnitName.Equals(unit.UnitName)
+                            select u).FirstOrDefault();
+                if (temp == null)
+                {
+                    db.Units.Add(unit);
+                    await db.SaveChangesAsync();
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateDataResponse(unit.UnitId.ToString()));
+                }
+                else
+                {
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateErrorResponse(new Exception("Unit already exists!")));
+                }
             }
             catch (Exception ex)
             {
@@ -162,6 +172,10 @@ namespace InventoryServices.Repository.Classes
                 {
                     jsonResponse = JsonConvert.SerializeObject(Helper.CreateNoDataResponse());
                 }
+                else if (this.ProductExists(UnitId))
+                {
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateErrorResponse(new Exception("Can not delete Category because 1 or more product(s) exits for this unit")));
+                }
                 else
                 {
                     db.Units.Remove(Unit);
@@ -177,9 +191,19 @@ namespace InventoryServices.Repository.Classes
             return jsonResponse;
         }
 
+        private bool ProductExists(int unitId)
+        {
+            return db.Products.Where(p => p.UnitId == unitId).FirstOrDefault() != null;
+        }
+
         private bool UnitExists(int id)
         {
             return db.Units.Count(e => e.UnitId == id) > 0;
+        }
+
+        private bool UnitNameExists(string unitName)
+        {
+            return db.Units.Count(e => e.UnitName.Equals(unitName)) > 0;
         }
 
         public void Dispose()

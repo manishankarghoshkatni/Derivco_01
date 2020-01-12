@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Web.UI.WebControls;
-using InventoryUi.Inventory.Models;
+using InventoryUi.Models;
 using Newtonsoft.Json;
 using InventoryUi.Shared;
 using System.Data;
@@ -20,17 +20,19 @@ namespace InventoryUi.Inventory.Category
 
                 if (response.responseCode == ApiResponse.Success)
                 {
-                    InventoryUi.Inventory.Models.Category[] data = JsonConvert.DeserializeObject<InventoryUi.Inventory.Models.Category[]>(response.data.ToString());
+                    InventoryUi.Models.Category[] data = JsonConvert.DeserializeObject<InventoryUi.Models.Category[]>(response.data.ToString());
                     dt = Helper.CreateDataTable(data);
                 }
                 else if (response.responseCode == ApiResponse.NoDataFound)
                 {
+                    TxtId.Text = "";
                     TxtDescription.Text = "";
                     LblErrorMsg.Text = "No Data Found";
                     LblErrorMsg.Visible = true;
                 }
                 else if (response.responseCode == ApiResponse.Exception)
                 {
+                    TxtId.Text = "";
                     TxtDescription.Text = "";
                     LblErrorMsg.Text = "Api Error: " + response.error;
                     LblErrorMsg.Visible = true;
@@ -55,7 +57,9 @@ namespace InventoryUi.Inventory.Category
             if (!IsPostBack)
             {
                 this.BindGrid();
-            } 
+            }
+
+            TxtId.Attributes.Add("onkeypress", "return isNumberKey(event)");
         }
 
         protected void CmdSearchById_Click(object sender, EventArgs e)
@@ -71,7 +75,7 @@ namespace InventoryUi.Inventory.Category
                 else
                 {
                     ApiResponse response = Helper.GetApiResponse("api/Categories/" + id.ToString());
-                    InventoryUi.Inventory.Models.Category data = JsonConvert.DeserializeObject<InventoryUi.Inventory.Models.Category>(response.data.ToString());
+                    InventoryUi.Models.Category data = JsonConvert.DeserializeObject<InventoryUi.Models.Category>(response.data.ToString());
                     if (response.responseCode == ApiResponse.Success)
                     {
                         TxtCategoryName.Text = data.CategoryName;

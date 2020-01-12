@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Web.UI.WebControls;
-using InventoryUi.Inventory.Models;
+using InventoryUi.Models;
 using Newtonsoft.Json;
 using InventoryUi.Shared;
 using System.Data;
@@ -9,42 +9,84 @@ namespace InventoryUi.Inventory.Product
 {
     public partial class Search : System.Web.UI.Page
     {
-        void BindGrid(string ProductName = "")
+        private ApiResponse GetProductByName(string productName = "")
+        {
+            ApiResponse response = null;
+            try
+            {
+                string actionUrl = "api/Products";
+                productName = productName.Trim();
+                if (productName.Length > 0)
+                {
+                    actionUrl += "/" + productName;
+                }
+
+                response = Helper.GetApiResponse(actionUrl);
+
+                if (response.responseCode == ApiResponse.Success)
+                {
+                    InventoryUi.Models.Product[] data = JsonConvert.DeserializeObject<InventoryUi.Models.Product[]>(response.data.ToString());
+                    response.data = Helper.CreateDataTable(data);
+                }
+            }
+            catch(Exception ex)
+            {
+                LblErrorMsg.Text = "Page Error: " + ex.Message;
+                LblErrorMsg.Visible = true;
+            }
+
+            return response;
+        }
+
+        private ApiResponse GetProductByCategoryId(int categoryId)
+        {
+            ApiResponse response = null;
+            try
+            {
+                string actionUrl = "api/Products/Category/" + categoryId.ToString();
+
+                response = Helper.GetApiResponse(actionUrl);
+
+                if (response.responseCode == ApiResponse.Success)
+                {
+                    InventoryUi.Models.Product[] data = JsonConvert.DeserializeObject<InventoryUi.Models.Product[]>(response.data.ToString());
+                    response.data = Helper.CreateDataTable(data);
+                }
+            }
+            catch (Exception ex)
+            {
+                LblErrorMsg.Text = "Page Error: " + ex.Message;
+                LblErrorMsg.Visible = true;
+            }
+
+            return response;
+        }
+
+        void BindGrid(ApiResponse response)
         {
 
             DataTable dt = null;
 
             try
             {
-                string actionUrl = "api/Products";
-                ProductName = ProductName.Trim();
-                if (ProductName.Length > 0)
-                {
-                    actionUrl += "/" + ProductName;
-                }
-                ApiResponse response = Helper.GetApiResponse(actionUrl);
 
                 if (response.responseCode == ApiResponse.Success)
                 {
-                    InventoryUi.Inventory.Models.Product[] data = JsonConvert.DeserializeObject<InventoryUi.Inventory.Models.Product[]>(response.data.ToString());
-                    dt = Helper.CreateDataTable(data);
+                    dt = response.data as DataTable;
                 }
                 else if (response.responseCode == ApiResponse.NoDataFound)
                 {
-                    TxtDescription.Text = "";
                     LblErrorMsg.Text = "No Data Found";
                     LblErrorMsg.Visible = true;
                 }
                 else if (response.responseCode == ApiResponse.Exception)
                 {
-                    TxtDescription.Text = "";
                     LblErrorMsg.Text = "Api Error: " + response.error;
                     LblErrorMsg.Visible = true;
                 }
             }
             catch (Exception ex)
             {
-                TxtDescription.Text = "";
                 LblErrorMsg.Text = "Page Error: " + ex.Message;
                 LblErrorMsg.Visible = true;
             }
@@ -54,7 +96,7 @@ namespace InventoryUi.Inventory.Product
 
         }
 
-        void LoadCategories(string categoryName="")
+        void LoadCategories(string categoryName = "")
         {
             ApiResponse response = Helper.GetCategories(categoryName);
 
@@ -63,8 +105,8 @@ namespace InventoryUi.Inventory.Product
 
                 if (response.responseCode == ApiResponse.Success)
                 {
-                    InventoryUi.Inventory.Models.Category[] data = JsonConvert.DeserializeObject<InventoryUi.Inventory.Models.Category[]>(response.data.ToString());
-                    using (DataTable dt = Helper.CreateDataTable(data))
+                    InventoryUi.Models.Category[] data = JsonConvert.DeserializeObject<InventoryUi.Models.Category[]>(response.data.ToString());
+                    using (DataTable dt = Helper.CreateDataTable(data, ""))
                     {
                         CboCategory.DataSource = dt;
                         CboCategory.DataTextField = "CategoryName";
@@ -74,20 +116,20 @@ namespace InventoryUi.Inventory.Product
                 }
                 else if (response.responseCode == ApiResponse.NoDataFound)
                 {
-                    TxtDescription.Text = "";
+                    TxtDescription.Text = string.Empty;
                     LblErrorMsg.Text = "No Data Found";
                     LblErrorMsg.Visible = true;
                 }
                 else if (response.responseCode == ApiResponse.Exception)
                 {
-                    TxtDescription.Text = "";
+                    TxtDescription.Text = string.Empty;
                     LblErrorMsg.Text = "Api Error: " + response.error;
                     LblErrorMsg.Visible = true;
                 }
             }
             catch (Exception ex)
             {
-                TxtDescription.Text = "";
+                TxtDescription.Text = string.Empty;
                 LblErrorMsg.Text = "Page Error: " + ex.Message;
                 LblErrorMsg.Visible = true;
             }
@@ -99,11 +141,10 @@ namespace InventoryUi.Inventory.Product
 
             try
             {
-
                 if (response.responseCode == ApiResponse.Success)
                 {
-                    InventoryUi.Inventory.Models.Unit[] data = JsonConvert.DeserializeObject<InventoryUi.Inventory.Models.Unit[]>(response.data.ToString());
-                    using (DataTable dt = Helper.CreateDataTable(data))
+                    InventoryUi.Models.Unit[] data = JsonConvert.DeserializeObject<InventoryUi.Models.Unit[]>(response.data.ToString());
+                    using (DataTable dt = Helper.CreateDataTable(data, ""))
                     {
                         CboUnit.DataSource = dt;
                         CboUnit.DataTextField = "UnitName";
@@ -113,25 +154,36 @@ namespace InventoryUi.Inventory.Product
                 }
                 else if (response.responseCode == ApiResponse.NoDataFound)
                 {
-                    TxtDescription.Text = "";
+                    TxtDescription.Text = string.Empty;
                     LblErrorMsg.Text = "No Data Found";
                     LblErrorMsg.Visible = true;
                 }
                 else if (response.responseCode == ApiResponse.Exception)
                 {
-                    TxtDescription.Text = "";
+                    TxtDescription.Text = string.Empty;
                     LblErrorMsg.Text = "Api Error: " + response.error;
                     LblErrorMsg.Visible = true;
                 }
             }
             catch (Exception ex)
             {
-                TxtDescription.Text = "";
+                TxtDescription.Text = string.Empty;
                 LblErrorMsg.Text = "Page Error: " + ex.Message;
                 LblErrorMsg.Visible = true;
             }
         }
 
+        private void LoadCurrencies()
+        {
+            string[] currencies = Helper.GetCurrencies();
+            if (currencies != null)
+            {
+                foreach (string currency in currencies)
+                {
+                    CboCurrency.Items.Add(new ListItem(currency, currency));
+                }
+            }
+        }
         protected void Page_Load(object sender, EventArgs e)
         {
             LblErrorMsg.Visible = false;
@@ -139,59 +191,157 @@ namespace InventoryUi.Inventory.Product
 
             if (!IsPostBack)
             {
-                this.BindGrid();
+  
                 this.LoadCategories("");
                 this.LoadUnits("");
+                this.LoadCurrencies();
             }
+            this.BindGrid(this.GetProductByName(""));
+            TxtId.Attributes.Add("onkeypress", "return isNumberKey(event)");
         }
 
-
-        protected void CmdSearchById_Click(object sender, EventArgs e)
+        private void ClearFields()
+        {
+            TxtId.Text = string.Empty;
+            TxtProductName.Text = string.Empty;
+            TxtDescription.Text = string.Empty;
+            CboCategory.SelectedIndex = -1;
+            CboUnit.SelectedIndex = -1;
+            CboCurrency.SelectedIndex = -1;
+            TxtPrice.Text = string.Empty;
+        }
+        private void SearchById(int id)
         {
             try
             {
-                int id = 0;
-                if (!int.TryParse(TxtId.Text, out id))
+                ApiResponse response = Helper.GetApiResponse("api/Products/" + id.ToString());
+                InventoryUi.Models.Product data = JsonConvert.DeserializeObject<InventoryUi.Models.Product>(response.data.ToString());
+                if (response.responseCode == ApiResponse.Success)
                 {
-                    LblErrorMsg.Text = "Please enter proper Id to search";
+                    TxtProductName.Text = data.ProductName;
+                    TxtDescription.Text = data.ProductDescription.Replace("<br />", "\r\n");
+                    CboCategory.SelectedValue = data.CategoryId.ToString();
+                    CboUnit.SelectedValue = data.UnitId.ToString();
+                    TxtPrice.Text = data.Price.ToString();
+                    CboCurrency.SelectedValue = data.Currency;
+                }
+                else if (response.responseCode == ApiResponse.NoDataFound)
+                {
+                    this.ClearFields();
+                    LblErrorMsg.Text = "No Data Found";
                     LblErrorMsg.Visible = true;
                 }
-                else
+                else if (response.responseCode == ApiResponse.Exception)
                 {
-                    ApiResponse response = Helper.GetApiResponse("api/Products/" + id.ToString());
-                    InventoryUi.Inventory.Models.Product data = JsonConvert.DeserializeObject<InventoryUi.Inventory.Models.Product>(response.data.ToString());
-                    if (response.responseCode == ApiResponse.Success)
-                    {
-                        TxtProductName.Text = data.ProductName;
-                        TxtDescription.Text = data.ProductDescription;
-                        CboCategory.SelectedValue = data.CategoryId.ToString();
-                        CboUnit.SelectedValue = data.UnitId.ToString();
-                        TxtPrice.Text = data.Price.ToString();
-                        CboCurrency.SelectedValue = data.Currency;
-                    }
-                    else if (response.responseCode == ApiResponse.NoDataFound)
-                    {
-                        TxtProductName.Text = "";
-                        TxtDescription.Text = "";
-                        LblErrorMsg.Text = "No Data Found";
-                        LblErrorMsg.Visible = true;
-                    }
-                    else if (response.responseCode == ApiResponse.Exception)
-                    {
-                        TxtProductName.Text = "";
-                        TxtDescription.Text = "";
-                        LblErrorMsg.Text = "Api Error: " + response.error;
-                        LblErrorMsg.Visible = true;
-                    }
+                    this.ClearFields();
+                    LblErrorMsg.Text = "Api Error: " + response.error;
+                    LblErrorMsg.Visible = true;
                 }
             }
             catch (Exception ex)
             {
-                TxtProductName.Text = "";
-                TxtDescription.Text = "";
+                this.ClearFields();
                 LblErrorMsg.Text = "Page Error: " + ex.Message;
                 LblErrorMsg.Visible = true;
             }
+        }
+
+        protected void CmdSearchById_Click(object sender, EventArgs e)
+        {
+            int id = 0;
+            if (!int.TryParse(TxtId.Text, out id))
+            {
+                LblErrorMsg.Text = "Please enter proper Id to search";
+                LblErrorMsg.Visible = true;
+            }
+            else
+            {
+                this.SearchById(id);
+                TxtId.Text = id.ToString();
+            }
+        }
+
+        protected void ProductGridView_RowEditing(object sender, GridViewEditEventArgs e)
+        {
+            int productId = Convert.ToInt32(ProductGridView.DataKeys[e.NewEditIndex].Value.ToString());
+            Response.Redirect("/Inventory/Product/Modify?productId=" + productId.ToString());
+        }
+
+        protected void ProductGridView_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            if (e.Row.Cells.Count > 2)
+            {
+                e.Row.Cells[2].Attributes.Add("style", "word-break:break-all;word-wrap:break-word;width:200px");
+            }
+        }
+
+        protected void ProductGridView_RowDeleting(object sender, GridViewDeleteEventArgs e)
+        {
+            try
+            {
+                int productId = Convert.ToInt32(ProductGridView.DataKeys[e.RowIndex].Value.ToString());
+
+                string actionUrl = "api/Products/Delete";
+
+                ApiResponse response = Helper.DeleteRequestToApi(actionUrl, productId);
+
+                if (response.responseCode == ApiResponse.Success)
+                {
+                    LblMsg.Text = response.data.ToString();
+                    LblMsg.Visible = true;
+                    this.BindGrid(this.GetProductByName(""));
+                }
+                else if (response.responseCode == ApiResponse.NoDataFound)
+                {
+                    this.ClearFields();
+                    LblErrorMsg.Text = "No Data Found";
+                    LblErrorMsg.Visible = true;
+                }
+                else if (response.responseCode == ApiResponse.Exception)
+                {
+                    this.ClearFields();
+                    LblErrorMsg.Text = "Api Error: " + response.error;
+                    LblErrorMsg.Visible = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                this.ClearFields();
+                LblErrorMsg.Text = "Page Error: " + ex.Message;
+                LblErrorMsg.Visible = true;
+            }
+        }
+
+        protected void CmdSearchByName_Click(object sender, EventArgs e)
+        {
+            string productName = TxtProductName.Text;
+            this.BindGrid(this.GetProductByName(productName));
+            this.ClearFields();
+            TxtProductName.Text = productName;
+        }
+
+        protected void CmdSearchByCategory_Click(object sender, EventArgs e)
+        {
+            int categoryId = int.Parse(CboCategory.SelectedValue);
+            if (categoryId == 0)
+            {
+                this.BindGrid(this.GetProductByName("")); // if no category selected, show all products
+            }
+            else
+            {
+                this.BindGrid(this.GetProductByCategoryId(int.Parse(CboCategory.SelectedValue)));
+            }
+            this.ClearFields();
+            CboCategory.SelectedValue = categoryId.ToString();
+        }
+
+        protected void ProductGridView_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            if(e.NewPageIndex > -1)
+            {
+                ProductGridView.PageIndex = e.NewPageIndex;
+                ProductGridView.DataBind();
+            }         
         }
     }
 }

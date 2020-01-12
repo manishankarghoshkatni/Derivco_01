@@ -91,6 +91,139 @@ namespace InventoryServices.Repository.Classes
             return jsonResponse;
         }
 
+        public async Task<string> GetByNameAsync(string productName)
+        {
+            string jsonResponse = "";
+
+            try
+            {
+                var q = db.GetProductByName(productName);
+                
+                var result = await Task.FromResult(q.ToList());
+                if (result.Count() > 0)
+                {
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateDataResponse(result));
+                }
+                else
+                {
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateNoDataResponse());
+                }
+            }
+            catch (Exception ex)
+            {
+                jsonResponse = JsonConvert.SerializeObject(Helper.CreateErrorResponse(ex));
+            }
+
+            return jsonResponse;
+        }
+
+        public async Task<string> GetByCategoryAsync(int categoryId)
+        {
+            string jsonResponse = "";
+
+            try
+            {
+                var q = db.GetProductByCategoryId(categoryId);
+
+                var result = await Task.FromResult(q.ToList());
+                if (result.Count() > 0)
+                {
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateDataResponse(result));
+                }
+                else
+                {
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateNoDataResponse());
+                }
+            }
+            catch (Exception ex)
+            {
+                jsonResponse = JsonConvert.SerializeObject(Helper.CreateErrorResponse(ex));
+            }
+
+            return jsonResponse;
+        }
+
+        public async Task<string> CreateProductAsync(Product product)
+        {
+            string jsonResponse = "";
+
+            try
+            {
+                var temp = (from p in db.Products
+                            where p.ProductName.Equals(product.ProductName)
+                            select p).FirstOrDefault();
+                if (temp == null)
+                {
+                    db.Products.Add(product);
+                    await db.SaveChangesAsync();
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateDataResponse(product.ProductId.ToString()));
+                }
+                else
+                {
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateErrorResponse(new Exception("Product already exists!")));
+                }
+            }
+            catch (Exception ex)
+            {
+                jsonResponse = JsonConvert.SerializeObject(Helper.CreateErrorResponse(ex));
+            }
+
+            return jsonResponse;
+        }
+
+        public async Task<string> ModifyProductAsync(Product product)
+        {
+            string jsonResponse = "";
+
+            try
+            {
+                db.Entry(product).State = EntityState.Modified;
+                await db.SaveChangesAsync();
+                jsonResponse = JsonConvert.SerializeObject(Helper.CreateDataResponse(product.ProductId.ToString()));
+            }
+            catch (Exception ex)
+            {
+                if (!this.ProductExists(product.ProductId))
+                {
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateErrorResponse(new Exception("Product Id not available")));
+                }
+                else jsonResponse = JsonConvert.SerializeObject(Helper.CreateErrorResponse(ex));
+            }
+
+            return jsonResponse;
+        }
+
+        public async Task<string> DeleteProductAsync(int productId)
+        {
+            string jsonResponse = "";
+
+            try
+            {
+                Product product = await db.Products.FindAsync(productId);
+                if (product == null)
+                {
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateNoDataResponse());
+                }
+                else
+                {
+                    db.Products.Remove(product);
+                    await db.SaveChangesAsync();
+                    jsonResponse = JsonConvert.SerializeObject(Helper.CreateDataResponse("Product Deleted"));
+                }
+            }
+            catch (Exception ex)
+            {
+                jsonResponse = JsonConvert.SerializeObject(Helper.CreateErrorResponse(ex));
+            }
+
+            return jsonResponse;
+        }
+
+        private bool ProductExists(int id)
+        {
+            return db.Products.Count(e => e.ProductId == id) > 0;
+        }
+
         public void Dispose()
         {
             db.Dispose();

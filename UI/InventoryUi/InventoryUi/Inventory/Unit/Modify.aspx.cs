@@ -1,5 +1,5 @@
 ﻿using System;
-using InventoryUi.Inventory.Models;
+using InventoryUi.Models;
 using Newtonsoft.Json;
 using InventoryUi.Shared;
 
@@ -14,7 +14,8 @@ namespace InventoryUi.Inventory.Unit
             LblMsg.Visible = false;
             if (!IsPostBack)
             {
-                if (Request["unitId"] != null)
+                if (Request["unitId"] == null) { Response.Redirect("/Inventory/Unit/Search"); }
+                else
                 {
                     int unitId = 0;
 
@@ -32,7 +33,7 @@ namespace InventoryUi.Inventory.Unit
             try
             {
                 ApiResponse response = Helper.GetApiResponse("api/Units/" + id.ToString());
-                InventoryUi.Inventory.Models.Unit data = JsonConvert.DeserializeObject<InventoryUi.Inventory.Models.Unit>(response.data.ToString());
+                InventoryUi.Models.Unit data = JsonConvert.DeserializeObject<InventoryUi.Models.Unit>(response.data.ToString());
                 if (response.responseCode == ApiResponse.Success)
                 {
                     TxtUnitName.Text = data.UnitName;
@@ -69,7 +70,7 @@ namespace InventoryUi.Inventory.Unit
 
                 if (int.TryParse(TxtId.Text, out unitId))
                 {
-                    InventoryUi.Inventory.Models.Unit unit = new InventoryUi.Inventory.Models.Unit();
+                    InventoryUi.Models.Unit unit = new InventoryUi.Models.Unit();
                     unit.UnitId = unitId;
                     unit.UnitName = TxtUnitName.Text;
                     unit.UnitDescription = TxtDescription.Text;

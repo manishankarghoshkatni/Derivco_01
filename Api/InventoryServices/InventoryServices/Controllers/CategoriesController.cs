@@ -50,8 +50,7 @@ namespace InventoryServices.Controllers
             {
                 string json = JsonConvert.SerializeObject(Helper.CreateErrorResponse(new Exception("Invalid Model data")));
                 return json;
-            }
-            
+            }           
         }
 
         [Route("Modify")]

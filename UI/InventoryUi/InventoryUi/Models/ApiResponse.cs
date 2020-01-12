@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace InventoryUi.Inventory.Models
+namespace InventoryUi.Models
 {
     public class ApiResponse
     {
@@ -14,6 +14,5 @@ namespace InventoryUi.Inventory.Models
         public const int Success = 0;
         public const int NoDataFound = 1;
         public const int Exception = 2;
-
     }
 }

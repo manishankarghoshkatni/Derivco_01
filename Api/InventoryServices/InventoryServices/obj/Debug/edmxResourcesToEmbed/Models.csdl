@@ -68,5 +68,37 @@
       <End Role="Units" EntitySet="Units" />
       <End Role="Product" EntitySet="Products" />
     </AssociationSet>
+    <FunctionImport Name="GetProductByName" ReturnType="Collection(InventoryModel.GetProductByName_Result)">
+      <Parameter Name="ProductName" Mode="In" Type="String" />
+    </FunctionImport>
+    <FunctionImport Name="GetProductByCategoryId" ReturnType="Collection(InventoryModel.GetProductByCategoryId_Result)">
+      <Parameter Name="CategoryId" Mode="In" Type="Int32" />
+    </FunctionImport>
   </EntityContainer>
+  <ComplexType Name="GetProductByName_Result">
+    <Property Type="Int32" Name="ProductId" Nullable="false" />
+    <Property Type="String" Name="ProductName" Nullable="false" MaxLength="100" />
+    <Property Type="Int32" Name="CategoryId" Nullable="false" />
+    <Property Type="Decimal" Name="Price" Nullable="false" Precision="10" Scale="4" />
+    <Property Type="String" Name="Currency" Nullable="false" MaxLength="5" />
+    <Property Type="Int32" Name="UnitId" Nullable="false" />
+    <Property Type="String" Name="ProductDescription" Nullable="false" MaxLength="300" />
+    <Property Type="String" Name="CategoryName" Nullable="false" MaxLength="100" />
+    <Property Type="String" Name="CategoryDescription" Nullable="false" MaxLength="300" />
+    <Property Type="String" Name="UnitName" Nullable="false" MaxLength="20" />
+    <Property Type="String" Name="UnitDescription" Nullable="true" MaxLength="100" />
+  </ComplexType>
+  <ComplexType Name="GetProductByCategoryId_Result">
+    <Property Type="Int32" Name="ProductId" Nullable="false" />
+    <Property Type="String" Name="ProductName" Nullable="false" MaxLength="100" />
+    <Property Type="Int32" Name="CategoryId" Nullable="false" />
+    <Property Type="Decimal" Name="Price" Nullable="false" Precision="10" Scale="4" />
+    <Property Type="String" Name="Currency" Nullable="false" MaxLength="5" />
+    <Property Type="Int32" Name="UnitId" Nullable="false" />
+    <Property Type="String" Name="ProductDescription" Nullable="false" MaxLength="300" />
+    <Property Type="String" Name="CategoryName" Nullable="false" MaxLength="100" />
+    <Property Type="String" Name="CategoryDescription" Nullable="false" MaxLength="300" />
+    <Property Type="String" Name="UnitName" Nullable="false" MaxLength="20" />
+    <Property Type="String" Name="UnitDescription" Nullable="true" MaxLength="100" />
+  </ComplexType>
 </Schema>
